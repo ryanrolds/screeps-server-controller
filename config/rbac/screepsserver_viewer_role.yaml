@@ -1,0 +1,20 @@
+# permissions for end users to view screepsservers.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: screepsserver-viewer-role
+rules:
+- apiGroups:
+  - screeps.pedanticorderliness.com
+  resources:
+  - screepsservers
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - screeps.pedanticorderliness.com
+  resources:
+  - screepsservers/status
+  verbs:
+  - get

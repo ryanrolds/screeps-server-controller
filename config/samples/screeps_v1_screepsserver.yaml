@@ -1,0 +1,6 @@
+apiVersion: screeps.pedanticorderliness.com/v1
+kind: ScreepsServer
+metadata:
+  name: screepsserver-sample
+spec:
+  # TODO(user): Add fields here

@@ -1,0 +1,16 @@
+domain: pedanticorderliness.com
+layout:
+- go.kubebuilder.io/v3
+projectName: screeps-server-controller
+repo: github.com/ryanrolds/screeps-server-controller
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: pedanticorderliness.com
+  group: screeps
+  kind: ScreepsServer
+  path: github.com/ryanrolds/screeps-server-controller/api/v1
+  version: v1
+version: "3"

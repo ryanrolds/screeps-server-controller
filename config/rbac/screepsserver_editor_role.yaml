@@ -1,0 +1,24 @@
+# permissions for end users to edit screepsservers.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: screepsserver-editor-role
+rules:
+- apiGroups:
+  - screeps.pedanticorderliness.com
+  resources:
+  - screepsservers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - screeps.pedanticorderliness.com
+  resources:
+  - screepsservers/status
+  verbs:
+  - get
