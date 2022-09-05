@@ -1,11 +1,14 @@
 # screeps-server-controller
 
-When developing a sophisticated Screeps bot a time comes when experiments need to be run and observed. The process of standing up
-and running experiments can be tedious and error prone. The purpose of this project is to reduce the pain around
-standing up, configuring, running, and cleaning-up Screeps Private Servers. This is accomplished by running a 
-this controller in a Kubernetes (K8s) cluster. The controller will handle the entire Private Server lifecycle. Initially, manual 
-creations/updates/deletions of Custom Resources (CRs) will drive Private Server management. Eventually, those CRs will be linked to 
-a Pull Request in GitHub, so that servers are created/destroyed by the opening/closing of Pull Requests using GitHub Actions.
+When developing a Screeps bot a time comes when experiments need to be run and observed. The process of standing up
+and running multiple Screeps Private Servers can be tedious and error prone. The purpose of this project is to reduce
+the pain around standing up, configuring, running, and cleaning-up Private Servers. This is accomplished by running a
+this controller in a Kubernetes (K8s) cluster. The controller will handle the entire Private Server lifecycle.
+Initially, manual creations/updates/deletions of Custom Resources (CRs) will drive Private Server management.
+Eventually, those CRs will be linked to a Pull Request in GitHub, so that servers are created/destroyed by the
+opening/closing of Pull Requests using GitHub Actions.
+
+This project uses (Kubebuilder)[https://github.com/kubernetes-sigs/kubebuilder].
 
 #### Roadmap
 
@@ -69,7 +72,7 @@ make undeploy
 
 ## Contributing
 
-// TODO(user): Add detailed information on how you would like others to contribute to this project
+See [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
 
 ### How it works
 
