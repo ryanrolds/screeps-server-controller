@@ -1,4 +1,4 @@
-# screeps-server-operator
+# screeps-server-controller
 
 When developing a Screeps bot a time comes when experiments need to be run and observed. The process of standing up
 and running multiple Screeps Private Servers can be tedious and error prone. The purpose of this project is to reduce
