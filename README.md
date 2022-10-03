@@ -1,4 +1,4 @@
-# screeps-server-controller
+# screeps-server-operator
 
 When developing a Screeps bot a time comes when experiments need to be run and observed. The process of standing up
 and running multiple Screeps Private Servers can be tedious and error prone. The purpose of this project is to reduce
@@ -12,7 +12,6 @@ This project uses (Kubebuilder)[https://github.com/kubernetes-sigs/kubebuilder].
 
 #### Roadmap
 
-- [ ] Create namespace to hold all bits for a single private server
 - [ ] Stand up Redis server
 - [ ] Stand up Mongo server
 - [ ] Create ConfigMaps and Secrets

@@ -2,5 +2,7 @@ apiVersion: screeps.pedanticorderliness.com/v1
 kind: ScreepsServer
 metadata:
   name: screepsserver-sample
+  namespace: screeps
 spec:
-  # TODO(user): Add fields here
+  branch: main
+  tag: xxxxxxxxxxxxxxxxxxxxxx
