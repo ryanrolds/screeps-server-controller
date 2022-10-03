@@ -8,7 +8,7 @@ Initially, manual creations/updates/deletions of Custom Resources (CRs) will dri
 Eventually, those CRs will be linked to a Pull Request in GitHub, so that servers are created/destroyed by the
 opening/closing of Pull Requests using GitHub Actions.
 
-This project uses (Kubebuilder)[https://github.com/kubernetes-sigs/kubebuilder].
+This project uses [Kubebuilder](https://github.com/kubernetes-sigs/kubebuilder)
 
 #### Roadmap
 
