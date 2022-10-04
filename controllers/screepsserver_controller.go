@@ -71,6 +71,10 @@ type ScreepsServerReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+//+kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=configmaps,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=screeps.pedanticorderliness.com,resources=screepsservers,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=screeps.pedanticorderliness.com,resources=screepsservers/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=screeps.pedanticorderliness.com,resources=screepsservers/finalizers,verbs=update
