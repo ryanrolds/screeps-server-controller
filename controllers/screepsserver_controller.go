@@ -209,6 +209,7 @@ func (r *ScreepsServerReconciler) ensurePrivateServer(ctx context.Context, scree
 
 	app := fmt.Sprintf(`%s-private-server`, screepsServer.Name)
 	replicas := int32(1)
+	image := fmt.Sprintf(`docker.pedanticorderliness.com/screeps-private-server:%s`, screepsServer.Spec.Tag)
 
 	privateServerName := types.NamespacedName{
 		Name:      app,
@@ -245,7 +246,7 @@ func (r *ScreepsServerReconciler) ensurePrivateServer(ctx context.Context, scree
 						Containers: []corev1.Container{
 							{
 								Name:  app,
-								Image: `docker.pedanticorderliness.com/screeps-pserver:6d7967a6558a5e0b74c3f33296132cf4166c9837000d49bba84edb5fe3b16ea2`,
+								Image: image,
 								VolumeMounts: []corev1.VolumeMount{
 									{
 										Name:      `screepsrc`,

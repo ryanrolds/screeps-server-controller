@@ -53,14 +53,7 @@ log_console = true
 log_rotate_keep = 5
 
 ;If set, disable built-in storage, useful when you use some other implementation.
-storage_disabled = true
+storage_disabled = false
 
 ;Automatically restart child processes.
 restart_interval = 3600
-
-[mongo]
-uri = mongodb://{{.Mongo.Username}}:{{.Mongo.Password}}@{{.Mongo.Host}}:27017/screeps?tls=false
-
-[redis]
-host = {{.Redis.Host}}
-port = {{.Redis.Port}}
