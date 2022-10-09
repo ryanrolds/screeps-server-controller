@@ -112,17 +112,19 @@ func (r *ScreepsServerReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	// Ensure Private Server is available
-	err = r.ensurePrivateServer(ctx, &screepsServer, config)
+	status, err := r.ensurePrivateServer(ctx, &screepsServer, config)
 	if err != nil {
 		logger.Error(err, "unable to ensure private server deployment")
 		return ctrl.Result{}, err
 	}
 
+	screepsServer.Status = *status
+
 	// Update status
-	// if err := r.Status().Update(ctx, &screepsServer); err != nil {
-	// 	logger.Error(err, "unable to update CronJob status")
-	// 	return ctrl.Result{}, err
-	// }
+	if err := r.Status().Update(ctx, &screepsServer); err != nil {
+		logger.Error(err, "unable to update CronJob status")
+		return ctrl.Result{}, err
+	}
 
 	logger.Info("Finished reconciliation")
 
@@ -161,16 +163,21 @@ func (r *ScreepsServerReconciler) privateServerDetails(ctx context.Context,
 	return psd, nil
 }
 
-func (r *ScreepsServerReconciler) ensurePrivateServer(ctx context.Context, screepsServer *screepsv1.ScreepsServer,
-	config privateServerDetails) error {
+func (r *ScreepsServerReconciler) ensurePrivateServer(
+	ctx context.Context,
+	screepsServer *screepsv1.ScreepsServer,
+	config privateServerDetails,
+) (*screepsv1.ScreepsServerStatus, error) {
+	logger := log.FromContext(ctx)
+
 	tmpl, err := template.New("private-server-config").Parse(screeps.PrivateServerConfigTemplate)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var buf bytes.Buffer
 	if err := tmpl.Execute(&buf, config); err != nil {
-		return err
+		return nil, err
 	}
 
 	configMapName := screepsServer.Name + "-private-server-config"
@@ -185,7 +192,7 @@ func (r *ScreepsServerReconciler) ensurePrivateServer(ctx context.Context, scree
 	if err != nil {
 		// normal error handling
 		if !apierrors.IsNotFound(err) {
-			return err
+			return nil, err
 		}
 
 		// If not present, create
@@ -199,11 +206,11 @@ func (r *ScreepsServerReconciler) ensurePrivateServer(ctx context.Context, scree
 			},
 		}
 		if err := ctrl.SetControllerReference(screepsServer, &privateServerConfig, r.Scheme); err != nil {
-			return err
+			return nil, err
 		}
 
 		if err := r.Create(ctx, &privateServerConfig); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
@@ -220,7 +227,7 @@ func (r *ScreepsServerReconciler) ensurePrivateServer(ctx context.Context, scree
 	if err != nil {
 		// normal error handling
 		if !apierrors.IsNotFound(err) {
-			return fmt.Errorf(`problem getting deployment for private server: %w`, err)
+			return nil, fmt.Errorf(`problem getting deployment for private server: %w`, err)
 		}
 
 		// If not present, create
@@ -278,11 +285,11 @@ func (r *ScreepsServerReconciler) ensurePrivateServer(ctx context.Context, scree
 			},
 		}
 		if err := ctrl.SetControllerReference(screepsServer, &privateServerDeployment, r.Scheme); err != nil {
-			return fmt.Errorf(`problem setting controller reference on private server deployment: %w`, err)
+			return nil, fmt.Errorf(`problem setting controller reference on private server deployment: %w`, err)
 		}
 
 		if err := r.Create(ctx, &privateServerDeployment); err != nil {
-			return fmt.Errorf(`problem creating private server deployment: %w`, err)
+			return nil, fmt.Errorf(`problem creating private server deployment: %w`, err)
 		}
 	}
 
@@ -296,7 +303,7 @@ func (r *ScreepsServerReconciler) ensurePrivateServer(ctx context.Context, scree
 	if err != nil {
 		// normal error handling
 		if !apierrors.IsNotFound(err) {
-			return err
+			return nil, err
 		}
 
 		// If not present, create
@@ -325,13 +332,45 @@ func (r *ScreepsServerReconciler) ensurePrivateServer(ctx context.Context, scree
 			},
 		}
 		if err := ctrl.SetControllerReference(screepsServer, &privateServerService, r.Scheme); err != nil {
-			return err
+			return nil, err
 		}
 
 		if err := r.Create(ctx, &privateServerService); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	return nil
+	service := corev1.Service{}
+	serviceName := types.NamespacedName{
+		Name:      app,
+		Namespace: screepsServer.Namespace,
+	}
+	err = r.Get(ctx, serviceName, &service)
+	if err != nil {
+		return nil, err
+	}
+
+	status := screepsv1.StatusCreated
+	host := ""
+
+	if len(service.Status.LoadBalancer.Ingress) > 0 {
+		ingress := service.Status.LoadBalancer.Ingress[0]
+		if ingress.IP != "" {
+			status = screepsv1.StatusRunning
+			host = ingress.IP
+
+			if screepsServer.Status.Status != screepsv1.StatusRunning {
+				// TODO common on GH PR of running server and IP
+				logger.Info("TODO create comment of GH PR with IP", screepsServer.Spec.PullRequest, host)
+			}
+		}
+	}
+
+	serverStatus := screepsv1.ScreepsServerStatus{
+		Status:      status,
+		ServiceHost: host,
+		ServicePort: 21025,
+	}
+
+	return &serverStatus, nil
 }
