@@ -23,6 +23,7 @@ import (
 
 	template "text/template"
 
+	botClient "github.com/ryanrolds/gh_bot/v1/client"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -361,7 +362,16 @@ func (r *ScreepsServerReconciler) ensurePrivateServer(
 
 			if screepsServer.Status.Status != screepsv1.StatusRunning {
 				// TODO common on GH PR of running server and IP
-				logger.Info("TODO create comment of GH PR with IP", screepsServer.Spec.PullRequest, host)
+				botClient := botClient.New(&botClient.Config{})
+
+				comment := fmt.Sprintf(`Server is now running at %s`, host)
+				err := botClient.CommentOnPR(ctx, "screeps-bot-choreographer", comment,
+					screepsServer.Spec.PullRequest.Issue)
+				if err != nil {
+					logger.Error(err, `problem commenting on PR`)
+				} else {
+					logger.Info("created comment")
+				}
 			}
 		}
 	}
