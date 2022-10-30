@@ -45,8 +45,6 @@ spec:
                 properties:
                   issue:
                     type: integer
-                  owner:
-                    type: string
                   repo:
                     type: string
                 type: object
