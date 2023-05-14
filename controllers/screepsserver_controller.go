@@ -70,6 +70,8 @@ type privateServerDetails struct {
 type ScreepsServerReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
+
+	GHBotClient *botClient.Client
 }
 
 //+kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch;create;update;patch;delete
@@ -127,7 +129,7 @@ func (r *ScreepsServerReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return ctrl.Result{}, err
 	}
 
-	logger.Info("Finished reconciliation")
+	logger.Info("Finished reconciliation", "server", screepsServer)
 
 	return ctrl.Result{}, nil
 }
@@ -354,19 +356,21 @@ func (r *ScreepsServerReconciler) ensurePrivateServer(
 	status := screepsv1.StatusCreated
 	host := ""
 
+	logger.Info("service", "service-status", service.Status)
+
 	if len(service.Status.LoadBalancer.Ingress) > 0 {
 		ingress := service.Status.LoadBalancer.Ingress[0]
 		if ingress.IP != "" {
 			status = screepsv1.StatusRunning
 			host = ingress.IP
 
-			if screepsServer.Status.Status != screepsv1.StatusRunning {
-				// TODO common on GH PR of running server and IP
-				botClient := botClient.New(&botClient.Config{})
+			logger.Info("ip", "ingress", ingress)
+			logger.Info("server status", "status", screepsServer.Status)
 
+			if screepsServer.Status.Status != screepsv1.StatusRunning {
 				comment := fmt.Sprintf(`Server is now running at %s`, host)
-				err := botClient.CommentOnPR(ctx, "screeps-bot-choreographer", comment,
-					screepsServer.Spec.PullRequest.Issue)
+				err := r.GHBotClient.CommentOnPR(ctx, screepsServer.Spec.PullRequest.Repo,
+					screepsServer.Spec.PullRequest.Issue, comment)
 				if err != nil {
 					logger.Error(err, `problem commenting on PR`)
 				} else {

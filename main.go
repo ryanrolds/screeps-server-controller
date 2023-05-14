@@ -18,6 +18,7 @@ package main
 
 import (
 	"flag"
+	"net/http"
 	"os"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -31,6 +32,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	botClient "github.com/ryanrolds/gh_bot/v1/client"
 	screepsv1 "github.com/ryanrolds/screeps-server-controller/api/v1"
 	"github.com/ryanrolds/screeps-server-controller/controllers"
 	//+kubebuilder:scaffold:imports
@@ -65,6 +67,18 @@ func main() {
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
+	ghBotHost := os.Getenv("GH_BOT_HOST")
+	if ghBotHost == "" {
+		setupLog.Error(nil, "GH_BOT_HOST environment variable is not set")
+		os.Exit(1)
+	}
+
+	ghBotToken := os.Getenv("GH_BOT_TOKEN")
+	if ghBotToken == "" {
+		setupLog.Error(nil, "GH_BOT_TOKEN environment variable is not set")
+		os.Exit(1)
+	}
+
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
 		MetricsBindAddress:     metricsAddr,
@@ -90,8 +104,9 @@ func main() {
 	}
 
 	if err = (&controllers.ScreepsServerReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:      mgr.GetClient(),
+		Scheme:      mgr.GetScheme(),
+		GHBotClient: botClient.New(http.DefaultClient, ghBotHost, ghBotToken),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ScreepsServer")
 		os.Exit(1)
